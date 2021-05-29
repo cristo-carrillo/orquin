@@ -1,8 +1,10 @@
 <?php  
 	require_once("Models/TCategoria.php");
 	require_once("Models/TProducto.php");
+	require_once("Models/TTipoPago.php");
+	require_once("Models/TCliente.php");
 	class Carrito extends Controllers{
-		use TCategoria, TProducto;
+		use TCategoria, TProducto,TTipoPago,TCliente;
 		public function __construct()
 		{
 			parent::__construct();
@@ -23,11 +25,22 @@
 				header("Location: ".base_url());
 				die();
 			}
+			// if(isset($_SESSION['login'])){
+			// 	$this->setDetalleTemp();
+			// }
+
 			$data['page_tag']="Panaderia Orquin - Procesar Pago";
 			$data['page_title']="Procesar Pago";
 			$data['page_name']="procesarpago";
+			$data['tiposPago']=$this->getTiposPago();
 			$this->views->getView($this,"procesarpago",$data);
 		}
+
+		// public function setDetalleTemp(){
+		// 	$sid=session_id();
+		// 	$arrPedido = array('idcliente' => $_SESSION['idUser'],'idtransaccion' => $sid, 'productos' => $_SESSION['arrCarrito']);
+		// 	$this->insertDetalleTemp($arrPedido);
+		// }
 
 		
 		

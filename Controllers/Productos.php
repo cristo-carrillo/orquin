@@ -4,7 +4,7 @@
 		{
 			parent::__construct();
 			session_start();
-			//session_regenerate_id(true);
+			session_regenerate_id(true);
 			if(empty($_SESSION['login']))
 			{
 				header('Location: '.base_url().'login');
@@ -15,6 +15,7 @@
 
 		public function Productos()
 		{
+
 			if(empty($_SESSION['permisosMod']['r'])){
 				header("Location:".base_url().'dashboard');
 			}
@@ -29,6 +30,7 @@
 		{
 			if($_SESSION['permisosMod']['r']){
 				$arrData = $this->model->selectProductos();
+				
 				for ($i=0; $i < count($arrData); $i++) {
 					$btnView = '';
 					$btnEdit = '';
@@ -54,6 +56,7 @@
 					$arrData[$i]['options'] = '<div class="text-center">'.$btnView.' '.$btnEdit.' '.$btnDelete.'</div>';
 				}
 				echo json_encode($arrData,JSON_UNESCAPED_UNICODE);
+
 			}
 			die();
 		}

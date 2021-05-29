@@ -27,6 +27,23 @@
 	border: 1px solid #CCC;
 }
 
+.buttonstyle{
+	background: rgb(194,126,75);
+	color:#fff;
+	border-color: rgb(194,126,75);
+}
+.buttonstyle:hover{
+	background: #633b1d;
+	color:#fff;
+	border-color: #633b1d;
+}
+.astyle{
+	color: #633b1d;
+}
+.astyle:hover{
+	color: rgb(194,126,75);
+}
+
 /*login*/
 #divLoading{
 	position: fixed;
@@ -171,4 +188,46 @@
 #celFotos img{
 	width: 150px;
 	margin: 10px;
+}
+
+/*  panaderia */
+.divmetodpago label, #divCondiciones{
+	width: 100%;
+	display: flex;
+}
+.divmetodpago label input, #divCondiciones input{
+	margin-right: 15px;
+}
+#divCondiciones a{
+	margin-left: 5px;
+}
+#divCondiciones  label{
+	margin-bottom: 0;
+}
+.modal{
+	z-index: 9999;
+}
+.linkw:hover{
+	text-decoration: none;
+}
+
+.container-title{
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.container-title input{
+	border: 1px solid #CCC;
+	padding: 4px;
+	border-radius: 5px;
+	margin-right: 5px;
+}
+.dflex{
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+}
+.ui-datepicker-calendar {
+    display: none;
 }

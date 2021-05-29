@@ -8,6 +8,79 @@
 	}
 	$total = $subtotal + COSTOENVIO;
 ?>
+
+<script
+    src="https://www.paypal.com/sdk/js?client-id=<?= IDCLIENTE ?>&currency=<?= CURRENCY ?>"> // Required. Replace YOUR_CLIENT_ID with your sandbox client ID.
+  </script>
+
+  
+
+  <script>
+  paypal.Buttons({
+    createOrder: function(data, actions) {
+      // This function sets up the details of the transaction, including the amount and line item details.
+      return actions.order.create({
+        purchase_units: [{
+          amount: {
+            value: <?= $total; ?>
+          },
+          description: "compra de articulos en <?= NOMBRE_EMPRESA ?><?= SMONEY.$total ?>"
+        }]
+      });
+    },
+    onApprove: function(data, actions) {
+      // This function captures the funds from the transaction.
+      return actions.order.capture().then(function(details) {
+      	let base_url = "<?= base_url(); ?>";
+      	let dir = document.querySelector("#txtDireccion").value;
+      	let ciudad = document.querySelector("#txtCiudad").value;
+      	let inttipopago = 1;
+      	let request = (window.XMLHttpRequest) ? new XMLHttpRequest() : new ActiveXObject('Microsoft.XMLHTTP');
+      	let ajaxUrl = base_url+'Tienda/procesarVenta'; 
+      	let formData = new FormData();
+      	formData.append('direccion',dir);
+      	formData.append('ciudad',ciudad);
+      	formData.append('inttipopago',inttipopago);
+      	formData.append('datapay',JSON.stringify(details));
+      	request.open("POST",ajaxUrl,true);
+      	request.send(formData);
+      	request.onreadystatechange = function(){
+      		if(request.readyState != 4)return;
+      		if(request.status == 200){
+      			let objData = JSON.parse(request.responseText);
+      			if(objData.status){
+      				window.location = base_url+"tienda/confirmarpedido/";
+      			}else{
+      				swal("",objData.msg, "error");
+      			}
+      		}
+      	}
+
+      });
+    }
+  }).render('#paypal-btn-container');
+</script>
+<!-- modal -->
+<div class="modal fade" id="modalTerminos" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Términos y Condiciones</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Nobis sunt, corrupti hic aspernatur cumque alias, ipsam omnis iure ipsum, nostrum labore obcaecati natus repellendus consequatur est nemo sapiente dolorem dicta. Lorem, ipsum dolor sit amet consectetur adipisicing elit. Commodi, voluptas, consectetur iusto delectus quaerat ullam nesciunt! Quae doloribus deserunt qui fugit illo nobis ipsum, accusamus eius perferendis beatae culpa molestias!</p>
+        <br>
+        <p>Lorem ipsum dolor sit amet consectetur adipisicing, elit. Nostrum, ipsa. Corporis ratione consectetur cum ipsa vitae repudiandae sed placeat soluta minus. Ex dicta neque, modi voluptatibus error commodi laudantium nobis!</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <br><br><br>
 <hr>
 <!-- breadcrumb -->
@@ -46,12 +119,12 @@
 						<?php
 							}else{
 						?>
-						<ul class="nav nav-tabs" id="myTab" role="tablist">
-						  <li class="nav-item">
-						    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#login" role="tab" aria-controls="home" aria-selected="true">Iniciar Sesión</a>
+						<ul class="nav nav-tabs " id="myTab" role="tablist">
+						  <li class="nav-item ">
+						    <a class="nav-link active astyle" id="home-tab" data-toggle="tab" href="#login" role="tab" aria-controls="home" aria-selected="true">Iniciar Sesión</a>
 						  </li>
 						  <li class="nav-item">
-						    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#registro" role="tab" aria-controls="profile" aria-selected="false">Crear cuenta</a>
+						    <a class="nav-link astyle" id="profile-tab" data-toggle="tab" href="#registro" role="tab" aria-controls="profile" aria-selected="false">Crear cuenta</a>
 						  </li>
 						</ul>
 						<div class="tab-content" id="myTabContent">
@@ -66,7 +139,7 @@
 							    <label for="txtPassword">Contraseña</label>
 							    <input type="password" class="form-control" id="txtPassword" name="txtPassword">
 							  </div>
-							  <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+							  <button type="submit" class="btn btn-primary buttonstyle">Iniciar sesión</button>
 							</form>
 
 						  </div>
@@ -92,8 +165,16 @@
 										<label for="txtEmailCliente">Email</label>
 										<input type="email" class="form-control valid validEmail" id="txtEmailCliente" name="txtEmailCliente" required="">
 									</div>
+
 						 		</div>
-								<button type="submit" class="btn btn-primary">Regístrate</button>
+						 		<div class="row justify-content-center">
+				                  <div class="form-group col-md-6 text-center">
+				                    <label for="txtPassword">Password</label>
+				                    <input type="password"  class="form-control" id="txtPassword" name="txtPassword">
+				                  </div>
+				                </div>
+
+								<button type="submit" class="btn btn-primary buttonstyle">Regístrate</button>
 						 	</form>
 						  </div>
 						</div>
@@ -152,12 +233,71 @@
 							</span>
 						</div>
 					</div>
+					<hr>
 					<?php
 							if(isset($_SESSION['login'])){
-						?>
-					<button type="submit" id="btnComprar" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
-						Pagar
-					</button>
+						
+					?>
+
+					<div id="divMetodoPago" class="notblock">
+						<div id="divCondiciones">
+							<input type="checkbox" id="condiciones">
+							<label for="condiciones"> Aceptar</label>
+							<a href="#" data-toggle="modal" data-target="#modalTerminos">Terminos y condiciones</a>
+						</div>
+						<div id="optMetodoPago" class="notblock">
+							<hr>
+						<h4 class="mtext-109 cl2 p-b-30">
+									Método de pago
+								</h4>
+								<div class="divmetodpago">
+									<div>
+										<label for="paypal">
+											<input type="radio" id="paypal" class="methodpago" name="payment-method" checked="" value="Paypal">
+											<img src="<?= media()?>/images/img-paypal.jpg" alt="Icono de PayPal" class="ml-space-sm" width="74" height="20">
+										</label>
+									</div>
+									<div>
+										<label for="contraentrega">
+											<input type="radio" id="contraentrega" class="methodpago" name="payment-method" value="CT">
+											<span>Contra Entrega</span>
+										</label>
+									</div>
+									<div id="divtipopago" class="notblock" >
+										<label for="listtipopago">Tipo de pago</label>
+										<div class="rs1-select2 rs2-select2 bor8 bg0 m-b-12 m-t-9">
+											<select id="listtipopago" class="js-select2" name="listtipopago">
+											<?php 
+												if(count($data['tiposPago']) > 0){ 
+													foreach ($data['tiposPago'] as $tipopago) {
+														if($tipopago['idtipopago'] != 1){
+											 ?>
+											 	<option value="<?= $tipopago['idtipopago']?>"><?= $tipopago['tipopago']?></option>
+											<?php
+														}
+													}
+											 } ?>
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+										<br>
+										<button type="submit" id="btnComprar" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">Procesar pedido</button>
+									</div>
+									<div id="divpaypal">
+										<div>
+											<p>Para completar la transacción, te enviaremos a los servidores seguros de PayPal.</p>
+										</div>
+										<br>
+
+										<div id="paypal-btn-container"></div>
+									</div>
+								</div>
+								<hr>
+								<br>
+								</div>
+					</div>
+
+										
 				<?php } ?>
 				</div>
 			</div>

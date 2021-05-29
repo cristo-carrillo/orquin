@@ -68,7 +68,7 @@
 					}else{
 						$idpersona=$arrData['idpersona'];
 						$nombreUsuario= $arrData['nombres'].' '.$arrData['apellidos'];
-						$url_recovery = base_url().'/login/confirmUser/'.$strEmail.'/'.$token;
+						$url_recovery = base_url().'login/confirmUser/'.$strEmail.'/'.$token;
 						$requestUpdate = $this->model->setTokenUser($idpersona,$token);
 
 					

@@ -12,6 +12,7 @@
     <!-- Main CSS-->
     <link rel="stylesheet" type="text/css" href="<?=media(); ?>/css/main.css">
     <link rel="stylesheet" type="text/css" href="<?=media(); ?>/css/bootstrap-select.min.css">
+    <link rel="stylesheet" type="text/css" href="<?= media();?>/js/datepicker/jquery-ui.min.css"> 
     <link rel="stylesheet" type="text/css" href="<?=media(); ?>/css/style.css">
   </head>
   <body class="app sidebar-mini">
@@ -28,9 +29,8 @@
         <!-- User Menu-->
         <li class="dropdown"><a class="app-nav__item" href="#" data-toggle="dropdown" aria-label="Open Profile Menu"><i class="fa fa-user fa-lg"></i></a>
           <ul class="dropdown-menu settings-menu dropdown-menu-right">
-            <li><a class="dropdown-item" href="<?= base_url();?>opciones"><i class="fa fa-cog fa-lg"></i> Settings</a></li>
-            <li><a class="dropdown-item" href="<?= base_url();?>Usuarios/perfil"><i class="fa fa-user fa-lg"></i> Profile</a></li>
-            <li><a class="dropdown-item" href="<?= base_url();?>logout"><i class="fa fa-sign-out fa-lg"></i> Logout</a></li>
+            <li><a class="dropdown-item" href="<?= base_url();?>Usuarios/perfil"><i class="fa fa-user fa-lg"></i> Perfil</a></li>
+            <li><a class="dropdown-item" href="<?= base_url();?>logout"><i class="fa fa-sign-out fa-lg"></i> Salir</a></li>
           </ul>
         </li>
       </ul>

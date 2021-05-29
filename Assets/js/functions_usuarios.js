@@ -282,7 +282,7 @@ function fntViewUsuario(idpersona){
     request.onreadystatechange=function(){
     	if(request.readyState==4 && request.status==200){
     		var objData = JSON.parse(request.responseText);
-
+            console.log(request.responseText);
     		if(objData.status){
     			var estadoUsuario = objData.data.status == 1 ? 
         		'<span class="badge badge-success">Activo</span>' : 

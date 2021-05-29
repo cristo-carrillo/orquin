@@ -193,7 +193,7 @@
 			if($_POST){
 
 
-				if(empty($_POST['txtNombre']) || empty($_POST['txtApellido']) || empty($_POST['txtTelefono']) || empty($_POST['txtEmailCliente']) )
+				if(empty($_POST['txtNombre']) || empty($_POST['txtApellido']) || empty($_POST['txtTelefono']) || empty($_POST['txtEmailCliente']) || empty($_POST['txtPassword']) )
 				{
 					$arrResponse = array("status" => false, "msg" => 'Datos incorrectos.');
 				}else{ 
@@ -203,7 +203,7 @@
 					$strEmail = strtolower(strClean($_POST['txtEmailCliente']));
 					$request_user = "";
 					$intTipoId = 7;//passwor agregar campo
-					$strPassword = passGenerator();
+					$strPassword = $_POST['txtPassword'];
 					$strPasswordEncript = hash("SHA256", $strPassword);
 												
 					$request_user = $this->insertCliente(
@@ -236,6 +236,143 @@
 			}
 			die();	
 
+		}
+
+		public function procesarVenta(){
+
+			if($_POST){
+				$idtransaccionpaypal = NULL;
+				$datospaypal = NULL;
+				$personaid = $_SESSION['idUser'];
+				$monto = 0;
+				$tipopagoid = intval($_POST['inttipopago']);
+				$direccionenvio = strClean($_POST['direccion']).', '.strClean($_POST['ciudad']);
+				$status = "Pendiente";
+				$subtotal = 0;
+				$costo_envio = COSTOENVIO;
+
+				if(!empty($_SESSION['arrCarrito'])){
+					foreach ($_SESSION['arrCarrito'] as $pro) {
+						$subtotal += $pro['cantidad'] * $pro['precio']; 
+					}
+					$monto = $subtotal + COSTOENVIO;
+
+					if(empty($_POST['datapay'])){
+						$request_pedido = $this->insertPedido($idtransaccionpaypal, 
+																	$datospaypal, 
+																	$personaid,
+																	$costo_envio,
+																	$monto, 
+																	$tipopagoid,
+																	$direccionenvio, 
+																	$status);
+
+
+						if($request_pedido > 0 ){
+							foreach ($_SESSION['arrCarrito'] as $producto) {
+								$productoid = $producto['idproducto'];
+								$precio = $producto['precio'];
+								$cantidad = $producto['cantidad'];
+								$this->insertDetalle($request_pedido,$productoid,$precio,$cantidad);
+							}
+
+							$orden = openssl_encrypt($request_pedido, METHODENCRIPT, KEY);
+							$transaccion = openssl_encrypt($idtransaccionpaypal, METHODENCRIPT, KEY);
+							$arrResponse = array("status" => true, 
+											"orden" => $orden, 
+											"transaccion" =>$transaccion,
+											"msg" => 'Pedido realizado'
+										);
+
+							$_SESSION['dataorden'] = $arrResponse;
+							unset($_SESSION['arrCarrito']);
+							session_regenerate_id(true);
+						}
+					}else{
+						$jsonPaypal = $_POST['datapay'];
+						$objPaypal = json_decode($jsonPaypal);
+						$status = "Aprobado";
+						if(is_object($objPaypal)){
+							$datospaypal = $jsonPaypal;
+							$idtransaccionpaypal = $objPaypal->purchase_units[0]->payments->captures[0]->id;
+							
+							if($objPaypal->status == "COMPLETED"){
+								$totalPaypal = formatMoney($objPaypal->purchase_units[0]->amount->value);
+								if($monto == $totalPaypal){
+									$status = "Completo";
+								}
+								$request_pedido = $this->insertPedido($idtransaccionpaypal, 
+																	$datospaypal, 
+																	$personaid,
+																	$costo_envio,
+																	$monto, 
+																	$tipopagoid,
+																	$direccionenvio, 
+																	$status);
+
+
+								if($request_pedido > 0 ){
+									foreach ($_SESSION['arrCarrito'] as $producto) {
+										$productoid = $producto['idproducto'];
+										$precio = $producto['precio'];
+										$cantidad = $producto['cantidad'];
+										$this->insertDetalle($request_pedido,$productoid,$precio,$cantidad);
+									}
+
+									$orden = openssl_encrypt($request_pedido, METHODENCRIPT, KEY);
+									$transaccion = openssl_encrypt($idtransaccionpaypal, METHODENCRIPT, KEY);
+									$arrResponse = array("status" => true, 
+													"orden" => $orden, 
+													"transaccion" =>$transaccion,
+													"msg" => 'Pedido realizado'
+												);
+
+									$_SESSION['dataorden'] = $arrResponse;
+									unset($_SESSION['arrCarrito']);
+									session_regenerate_id(true);
+
+								}else{
+									$arrResponse = array("status" => false, "msg" => 'no es posible procesar el pedido');
+								}
+
+							}else{
+								$arrResponse = array("status" => false, "msg" => 'no es posible el pago con PayPal');
+							}
+
+						}else{
+							$arrResponse = array("status" => false, "msg" => 'no es posible procesar el pedido');
+						}
+					}
+
+
+				}else{
+					$arrResponse = array("status" => false, "msg" => 'no es posible procesar el pedido');
+				}
+
+			}else{
+				$arrResponse = array("status" => false, "msg" => 'no es posible procesar el pedido');
+			}
+			echo json_encode($arrResponse,JSON_UNESCAPED_UNICODE);
+			die();
+
+			
+		}
+
+		public function confirmarpedido(){
+			if(empty($_SESSION['dataorden'])){
+				header("Location: ".base_url());
+			}else{
+				$dataorden = $_SESSION['dataorden'];
+				$idpedido = openssl_decrypt($dataorden['orden'], METHODENCRIPT, KEY);
+				$transaccion = openssl_decrypt($dataorden['transaccion'], METHODENCRIPT, KEY);
+				$data['page_tag'] = "Confirmar Pedido";
+				$data['page_title'] = "Confirmar Pedido";
+				$data['page_name'] = "confirmarpedido";
+				$data['orden'] = $idpedido;
+				$data['transaccion'] = $transaccion;
+				$this->views->getView($this,"confirmarpedido",$data);
+			}
+			unset($_SESSION['dataorden']);
 		}
 		
 		
